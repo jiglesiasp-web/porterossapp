@@ -89,6 +89,17 @@ input[type=range]{width:100%;accent-color:var(--dark);height:28px}
 .toast{position:fixed;bottom:calc(92px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);background:var(--dark2);color:#fff;font-size:14px;font-weight:600;padding:11px 18px;border-radius:10px;z-index:20;box-shadow:0 8px 24px rgba(0,0,0,.28)}
 .flex-between{display:flex;align-items:center;justify-content:space-between}
 .comp-row{display:flex;align-items:center;gap:8px;margin-bottom:9px}
+.cat-block{margin-bottom:20px}
+.panel-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--card);-webkit-overflow-scrolling:touch}
+.ptable{border-collapse:collapse;width:100%;font-size:13px}
+.ptable th,.ptable td{padding:9px 7px;text-align:center;border-bottom:1px solid var(--line);white-space:nowrap}
+.ptable thead th{font-size:11px;color:var(--muted);font-weight:700;background:var(--card)}
+.ptable td{font-weight:700;color:#0f172a}
+.pstick{position:sticky;left:0;background:var(--card);text-align:left;z-index:1;box-shadow:1px 0 0 var(--line)}
+.pname{color:var(--ink);min-width:120px}
+.pcat{display:block;font-size:10px;color:var(--muted);font-weight:600;margin-top:1px}
+.pmedia{color:#fff}
+.pna{color:#cbd5e1;font-weight:600}
 </style>
 </head>
 <body>
@@ -109,7 +120,7 @@ var MAX_SCALE=10;
 var REPORT_CSS='body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:#f1f5f9;color:#1e293b;margin:0;padding:20px}.report{max-width:720px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.06)}.rhead{background:#0284c7;color:#fff;padding:24px}.rhead h1{margin:0;font-size:26px}.rhead .b{margin-top:6px;font-size:13px}.rhead .cat{display:inline-block;background:rgba(255,255,255,.22);padding:2px 10px;border-radius:999px;font-weight:600;margin-right:8px}.rhead .stats{margin-top:12px;font-size:13px;border-top:1px solid rgba(255,255,255,.25);padding-top:10px}.rbody{padding:24px}.rbody h2{font-size:15px;color:#0f172a;margin:22px 0 12px;border-bottom:2px solid #e2e8f0;padding-bottom:6px}.rbody h2:first-child{margin-top:0}.br{display:flex;align-items:center;gap:10px;margin-bottom:8px}.bl{font-size:13px;color:#475569;width:150px;flex-shrink:0}.bt{flex:1;height:9px;background:#f1f5f9;border-radius:999px;overflow:hidden}.bf{display:block;height:100%;background:#0284c7;border-radius:999px}.bv{font-size:13px;font-weight:700;color:#0369a1;width:26px;text-align:right}.cols{display:flex;gap:16px;flex-wrap:wrap}.col{flex:1;min-width:200px}.coltitle{font-size:13px;font-weight:700;margin-bottom:8px}.col ul{margin:0;padding:0;list-style:none}.col li{padding:7px 10px;border-radius:8px;margin-bottom:6px;font-size:13px}.good li{background:#f8fafc;border-left:3px solid #cbd5e1}.work li{background:#f8fafc;border-left:3px solid #cbd5e1}.evo{font-size:13px;color:#475569;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:10px 12px;margin-bottom:12px}.chartbox{border:1px solid #e2e8f0;border-radius:12px;padding:8px}.rfoot{padding:16px 24px;background:#f8fafc;border-top:1px solid #e2e8f0;font-size:11px;color:#94a3b8;text-align:center}.resumen{font-size:13px;color:#334155;line-height:1.55}.pr{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:5px 0;border-bottom:1px solid #f1f5f9;font-size:12.5px}.pl{color:#475569}.pv{color:#334155;white-space:nowrap}.obj{font-size:13px;color:#334155;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:10px 12px;line-height:1.5}';
 
 var data={goalkeepers:[],evaluations:[],competencias:[],sessionTypes:[]};
-var state={view:'roster',selectedId:null,metric:'General',formCat:'Benjamín',formFoot:'',editGkId:null,editList:[],editTypes:[],formSessionType:'',formWorked:[],editEvalId:null};
+var state={view:'roster',selectedId:null,metric:'General',formCat:'Benjamín',formFoot:'',editGkId:null,editList:[],editTypes:[],formSessionType:'',formWorked:[],editEvalId:null,panelCat:'Todas'};
 
 function load(){
  try{var r=localStorage.getItem('fs_gk_data');if(r){var d=JSON.parse(r);data.goalkeepers=d.goalkeepers||[];data.evaluations=d.evaluations||[];data.competencias=d.competencias||[];data.sessionTypes=d.sessionTypes||[];data.scaleVersion=d.scaleVersion||1;}}catch(e){}
@@ -138,6 +149,9 @@ function initials(n){n=(n||'').trim();if(!n)return '?';var p=n.split(/\s+/);var 
 var AV_COLORS=['#0ea5e9','#6366f1','#ec4899','#f59e0b','#10b981','#ef4444','#8b5cf6','#14b8a6'];
 function avatarColor(n){var h=0;n=n||'';for(var i=0;i<n.length;i++)h=(h*31+n.charCodeAt(i))>>>0;return AV_COLORS[h%AV_COLORS.length];}
 function mediaColor(v){var r=v/MAX_SCALE;if(r<0.4)return '#dc2626';if(r<0.6)return '#d97706';if(r<0.8)return '#16a34a';return '#15803d';}
+function heatColor(v){var r=v/MAX_SCALE;if(r<0.4)return '#fee2e2';if(r<0.6)return '#fef3c7';if(r<0.8)return '#dcfce7';return '#bbf7d0';}
+function norm(s){return (s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();}
+function filterRoster(q){q=norm(q);var any=false;document.querySelectorAll('#app .cat-block').forEach(function(cb){var catAny=false;cb.querySelectorAll('.team-block').forEach(function(tb){var tAny=false;tb.querySelectorAll('.gk-row').forEach(function(r){var show=(!q||(r.getAttribute('data-name')||'').indexOf(q)>=0);r.style.display=show?'':'none';if(show)tAny=true;});tb.style.display=tAny?'':'none';if(tAny)catAny=true;});cb.style.display=catAny?'':'none';if(catAny)any=true;});var nr=document.getElementById('gk-nores');if(nr)nr.style.display=(any||!q)?'none':'';}
 
 function chartSVG(evs,metric){
  var W=340,H=200,padL=20,padR=10,padT=10,padB=22;
@@ -227,26 +241,29 @@ function shareReport(g){
 }
 
 function viewRoster(){
- var head='<div class="header"><div style="flex:1"><h1>Porteros FS</h1><div class="sub">'+data.goalkeepers.length+' portero'+(data.goalkeepers.length!==1?'s':'')+' · Maristas València</div></div><div style="display:flex;gap:6px"><button class="exp" data-action="openSettings">Ajustes</button>'+(data.goalkeepers.length?'<button class="exp" data-action="export">Exportar</button>':'')+'</div></div>';
+ var head='<div class="header"><div style="flex:1"><h1>Porteros FS</h1><div class="sub">'+data.goalkeepers.length+' portero'+(data.goalkeepers.length!==1?'s':'')+' · Maristas València</div></div><div style="display:flex;gap:6px">'+(data.goalkeepers.length?'<button class="exp" data-action="openPanel">Panel</button>':'')+'<button class="exp" data-action="openSettings">Ajustes</button>'+(data.goalkeepers.length?'<button class="exp" data-action="export">Exportar</button>':'')+'</div></div>';
  var body='';
  if(!data.goalkeepers.length){
   body='<div class="empty"><div class="big">🧤</div><div>Aún no hay porteros.</div><div class="hint">Añade el primero con el botón de abajo.</div></div>';
  }else{
-  body='<div class="wrap">';
+  body='<div class="wrap">';body+='<div style="margin-bottom:12px"><input class="t" id="gk-search" placeholder="Buscar portero..." autocomplete="off"></div>';
   CATEGORIAS.forEach(function(cat){
    var list=data.goalkeepers.filter(function(g){return g.category===cat;});
    if(!list.length)return;
-   body+='<div style="margin-bottom:20px"><div style="margin-bottom:8px"><span class="chip" style="'+CAT_STYLE[cat]+'">'+cat+'</span> <span style="font-size:12px;color:#94a3b8">'+list.length+'</span></div>';
+   body+='<div class="cat-block"><div style="margin-bottom:8px"><span class="chip" style="'+CAT_STYLE[cat]+'">'+cat+'</span> <span style="font-size:12px;color:#94a3b8">'+list.length+'</span></div>';
    var teams=[];list.forEach(function(g){var t=((g.team||'').trim())||'Sin equipo';if(teams.indexOf(t)<0)teams.push(t);});
    teams.sort(function(a,b){if(a==='Sin equipo')return 1;if(b==='Sin equipo')return -1;return a.localeCompare(b);});
    var showSub=!(teams.length===1&&teams[0]==='Sin equipo');
    teams.forEach(function(t){
     var sub=list.filter(function(g){return (((g.team||'').trim())||'Sin equipo')===t;});
+    body+='<div class="team-block">';
     if(showSub)body+='<div style="font-size:12px;font-weight:600;color:#64748b;margin:8px 0 4px 2px">'+esc(t)+'</div>';
-    sub.forEach(function(g){var le=latestEval(g.id);body+='<div class="gk-row" data-action="open" data-id="'+g.id+'"><div style="display:flex;align-items:center;gap:12px"><div class="avatar">'+initials(g.name)+'</div><div><div class="gk-name">'+esc(g.name)+'</div><div class="gk-team">'+(le?'Última: '+fmtShort(le.date):'Sin sesiones')+'</div></div></div>'+(le?'<div class="media-badge" style="background:'+mediaColor(avg(le.ratings))+'">'+avg(le.ratings)+'</div>':'')+'</div>';});
+    sub.forEach(function(g){var le=latestEval(g.id);body+='<div class="gk-row" data-action="open" data-id="'+g.id+'" data-name="'+esc(norm(g.name))+'"><div style="display:flex;align-items:center;gap:12px"><div class="avatar">'+initials(g.name)+'</div><div><div class="gk-name">'+esc(g.name)+'</div><div class="gk-team">'+(le?'Última: '+fmtShort(le.date):'Sin sesiones')+'</div></div></div>'+(le?'<div class="media-badge" style="background:'+mediaColor(avg(le.ratings))+'">'+avg(le.ratings)+'</div>':'')+'</div>';});
+    body+='</div>';
    });
    body+='</div>';
   });
+  body+='<div id="gk-nores" style="display:none;text-align:center;color:#94a3b8;padding:30px 0;font-size:13px">Sin resultados</div>';
   body+='</div>';
  }
  return head+body+'<button class="fab" data-action="addGk">+ Portero</button>';
@@ -346,12 +363,36 @@ function viewSettings(){
  return h+b;
 }
 
+function viewPanel(){
+ var comp=data.competencias;
+ var h='<div class="header"><button class="back" data-action="back">←</button><h1>Panel del equipo</h1></div>';
+ var b='<div class="wrap">';
+ if(!data.goalkeepers.length){return h+b+'<div class="empty-card"><div style="color:#64748b;font-size:14px">Aún no hay porteros.</div></div></div>';}
+ var cats=CATEGORIAS.filter(function(cc){return data.goalkeepers.some(function(g){return g.category===cc;});});
+ if(state.panelCat!=='Todas'&&cats.indexOf(state.panelCat)<0)state.panelCat='Todas';
+ var opts=['Todas'].concat(cats);
+ b+='<div class="metrics">';
+ opts.forEach(function(o){b+='<button class="metric'+(state.panelCat===o?' active':'')+'" data-action="panelCat" data-cat="'+esc(o)+'">'+esc(o)+'</button>';});
+ b+='</div>';
+ var list=data.goalkeepers.filter(function(g){return state.panelCat==='Todas'||g.category===state.panelCat;});
+ list.sort(function(a,b2){var ci=CATEGORIAS.indexOf(a.category)-CATEGORIAS.indexOf(b2.category);if(ci!==0)return ci;return (a.name||'').localeCompare(b2.name||'');});
+ if(!list.length){return h+b+'<div class="hint" style="text-align:center;padding:20px 0">Sin porteros en esta categoría.</div></div>';}
+ b+='<div class="panel-wrap"><table class="ptable"><thead><tr><th class="pstick">Portero</th>';
+ comp.forEach(function(cc,ci){b+='<th title="'+esc(cc.label)+'">'+(ci+1)+'</th>';});
+ b+='<th>Media</th></tr></thead><tbody>';
+ list.forEach(function(g){var le=latestEval(g.id);b+='<tr><td class="pstick pname">'+esc(g.name)+(state.panelCat==='Todas'?'<span class="pcat">'+g.category+'</span>':'')+'</td>';comp.forEach(function(cc){var v=le?le.ratings[cc.key]:undefined;if(typeof v==='number'){b+='<td style="background:'+heatColor(v)+'">'+v+'</td>';}else{b+='<td class="pna">-</td>';}});if(le){var m=avg(le.ratings);b+='<td class="pmedia" style="background:'+mediaColor(m)+'">'+m+'</td>';}else{b+='<td class="pna">-</td>';}b+='</tr>';});
+ b+='</tbody></table></div>';
+ b+='<div class="hint" style="margin-top:12px"><b>Cualidades:</b> '+comp.map(function(cc,ci){return (ci+1)+' '+esc(cc.label);}).join('  ·  ')+'</div>';
+ b+='<div class="hint" style="margin-top:8px;display:flex;align-items:center;gap:12px;flex-wrap:wrap"><span>Escala:</span><span style="display:inline-flex;align-items:center;gap:5px"><span style="width:13px;height:13px;border-radius:3px;background:#fee2e2;display:inline-block"></span>bajo</span><span style="display:inline-flex;align-items:center;gap:5px"><span style="width:13px;height:13px;border-radius:3px;background:#fef3c7;display:inline-block"></span>medio</span><span style="display:inline-flex;align-items:center;gap:5px"><span style="width:13px;height:13px;border-radius:3px;background:#bbf7d0;display:inline-block"></span>alto</span></div>';
+ return h+b+'</div>';
+}
 function render(){
  var app=document.getElementById('app');
  if(state.view==='profile')app.innerHTML=viewProfile();
  else if(state.view==='gkForm')app.innerHTML=viewGkForm();
  else if(state.view==='newEval')app.innerHTML=viewNewEval();
  else if(state.view==='settings')app.innerHTML=viewSettings();
+ else if(state.view==='panel')app.innerHTML=viewPanel();
  else app.innerHTML=viewRoster();
 }
 
@@ -381,13 +422,15 @@ document.addEventListener('click',function(e){
  else if(a==='delGk'){if(confirm('¿Eliminar este portero y todas sus evaluaciones?')){var gid=state.selectedId;data.goalkeepers=data.goalkeepers.filter(function(x){return x.id!==gid;});data.evaluations=data.evaluations.filter(function(x){return x.gkId!==gid;});save();state.selectedId=null;state.view='roster';render();}}
  else if(a==='export'){var payload=JSON.stringify(data,null,2);if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(payload).then(function(){toast('Datos copiados (JSON)');}).catch(function(){toast('No se pudo copiar');});}else{toast('No se pudo copiar');}}
  else if(a==='openSettings'){state.editList=data.competencias.map(function(c){return {key:c.key,label:c.label};});state.editTypes=data.sessionTypes.slice();state.view='settings';render();}
+ else if(a==='openPanel'){state.view='panel';render();}
+ else if(a==='panelCat'){state.panelCat=el.getAttribute('data-cat');render();}
  else if(a==='addComp'){syncSettingsInputs();var inp=document.getElementById('new-comp');var v=(inp.value||'').trim();if(!v){toast('Escribe un nombre');return;}if(state.editList.length>=12){toast('Máximo 12 cualidades');return;}state.editList.push({key:compKey(),label:v});render();}
  else if(a==='delComp'){syncSettingsInputs();var di=Number(el.getAttribute('data-idx'));state.editList.splice(di,1);render();}
  else if(a==='addType'){syncSettingsInputs();var inpt=document.getElementById('new-type');var vt=(inpt.value||'').trim();if(!vt){toast('Escribe un tipo');return;}if(state.editTypes.length>=12){toast('Máximo 12 tipos');return;}state.editTypes.push(vt);render();}
  else if(a==='delType'){syncSettingsInputs();var dti=Number(el.getAttribute('data-idx'));state.editTypes.splice(dti,1);render();}
  else if(a==='saveSettings'){syncSettingsInputs();var cleaned=state.editList.map(function(c){return {key:c.key||compKey(),label:(c.label||'').trim()};}).filter(function(c){return c.label;});if(!cleaned.length){toast('Deja al menos una cualidad');return;}var cleanTypes=state.editTypes.map(function(t){return (t||'').trim();}).filter(function(t){return t;});data.competencias=cleaned;data.sessionTypes=cleanTypes;if(state.metric!=='General'&&!cleaned.some(function(c){return c.key===state.metric;}))state.metric='General';save();state.view='roster';render();toast('Ajustes guardados');}
 });
-document.addEventListener('input',function(e){var s=e.target.closest('input[type=range][data-key]');if(s){var d=document.getElementById('val-'+s.getAttribute('data-key'));if(d)d.textContent=s.value;}});
+document.addEventListener('input',function(e){if(e.target&&e.target.id==='gk-search'){filterRoster(e.target.value);return;}var s=e.target.closest('input[type=range][data-key]');if(s){var d=document.getElementById('val-'+s.getAttribute('data-key'));if(d)d.textContent=s.value;}});
 
 load();render();
 </script>
